@@ -29,10 +29,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CheckMessageScreen() {
-    var text by remember { mutableStateOf("") }      // 내가 넣을 문자
-    var checked by remember { mutableStateOf(false) } // 체크박스 상태
-    var showDialog by remember { mutableStateOf(false) }
-    val keyboardController = LocalSoftwareKeyboardController.current
+    // 지금 띄울 메시지 (null이면 창 닫힘)
+    var dialogMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -40,43 +38,55 @@ fun CheckMessageScreen() {
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            label = { Text("메시지 문자 입력") },
-            singleLine = true,
-            // 키보드 엔터 키를 "완료"로 지정
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            // 엔터(완료)를 누르면 키보드를 내리고 메시지 창 표시
-            keyboardActions = KeyboardActions(onDone = {
-                keyboardController?.hide()
-                showDialog = true
-            }),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = checked,
-                onCheckedChange = { isChecked ->
-                    checked = isChecked
-                    if (isChecked) showDialog = true   // 체크되는 순간 메시지 표시
-                }
-            )
-            Text("체크하면 메시지 표시")
-        }
+        CheckMessageItem(number = 1, onShow = { dialogMessage = it })
+        Spacer(Modifier.height(32.dp))
+        CheckMessageItem(number = 2, onShow = { dialogMessage = it })
     }
 
-    if (showDialog) {
+    dialogMessage?.let { msg ->
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { dialogMessage = null },
             title = { Text("메시지") },
-            text = { Text(text.ifBlank { "(입력한 문자가 없습니다)" }) },
+            text = { Text(msg) },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) { Text("확인") }
+                TextButton(onClick = { dialogMessage = null }) { Text("확인") }
             }
         )
+    }
+}
+
+/** 입력칸 + 체크박스 한 세트 */
+@Composable
+fun CheckMessageItem(number: Int, onShow: (String) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    var checked by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    fun show() = onShow(text.ifBlank { "(${number}번에 입력한 문자가 없습니다)" })
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it },
+        label = { Text("${number}번 메시지 문자 입력") },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            keyboardController?.hide()
+            show()
+        }),
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Spacer(Modifier.height(8.dp))
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { isChecked ->
+                checked = isChecked
+                if (isChecked) show()
+            }
+        )
+        Text("${number}번 체크하면 메시지 표시")
     }
 }
