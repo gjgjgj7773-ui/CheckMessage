@@ -31,12 +31,16 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
 
       # 폰에서 바로 받을 수 있게 Releases에 APK 게시
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk CheckMessage.apk
+      # 릴리스 태그 = 앱 versionName (예: v1.3) → Obtainium이 설치 버전과 비교
+      - name: Read version & rename APK
+        run: |
+          VER=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)
+          echo "APP_VERSION=$VER" >> "$GITHUB_ENV"
+          cp app/build/outputs/apk/debug/app-debug.apk CheckMessage.apk
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          name: CheckMessage 빌드 ${{ github.run_number }}
+          tag_name: v${{ env.APP_VERSION }}
+          name: CheckMessage v${{ env.APP_VERSION }}
           files: CheckMessage.apk
           make_latest: true

@@ -12,8 +12,18 @@ android {
         applicationId = "com.benicube.checkmsg"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
+    }
+
+    // 모든 빌드를 같은 키로 서명 → 기존 앱 위에 업데이트 가능
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     compileOptions {

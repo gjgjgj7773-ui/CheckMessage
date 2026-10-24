@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -37,6 +38,11 @@ class MainActivity : ComponentActivity() {
 fun CheckMessageScreen() {
     // 지금 띄울 메시지 (null이면 창 닫힘)
     var dialogMessage by remember { mutableStateOf<String?>(null) }
+    // 설치된 앱 버전을 자동으로 읽어서 화면에 표시
+    val context = LocalContext.current
+    val appVersion = remember {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
+    }
 
     Column(
         modifier = Modifier
@@ -46,7 +52,7 @@ fun CheckMessageScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            "CheckMessage v1.3",
+            "CheckMessage v$appVersion",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.outline
         )
